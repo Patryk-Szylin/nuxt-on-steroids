@@ -9,19 +9,20 @@
           type="button"
           btn-style="inverted"
           style="margin-left: 10px"
-          @click="isLogin = !isLogin">Switch to {{ isLogin ? 'Signup' : 'Login' }}</AppButton>
+          @click="isLogin = !isLogin"
+        >Switch to {{ isLogin ? 'Signup' : 'Login' }}</AppButton>
       </form>
     </div>
   </div>
 </template>
 
 <script>
-import AppControlInput from '@/components/UI/AppControlInput'
-import AppButton from '@/components/UI/AppButton'
+import AppControlInput from "@/components/UI/AppControlInput";
+import AppButton from "@/components/UI/AppButton";
 
 export default {
-  name: 'AdminAuthPage',
-  layout: 'admin',
+  name: "AdminAuthPage",
+  layout: "admin",
   components: {
     AppControlInput,
     AppButton
@@ -29,9 +30,9 @@ export default {
   data() {
     return {
       isLogin: true
-    }
+    };
   }
-}
+};
 </script>
 
 <style scoped>
