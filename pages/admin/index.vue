@@ -2,6 +2,10 @@
   <div class="admin-page">
     <section class="new-post">
       <AppButton @click="$router.push('/admin/new-post')">Create Post</AppButton>
+      <AppButton style="margin-left: 10px" @click="onLogout">Logout</AppButton>
+      <AppButton style="margin-left: 10px" @click="onUserCheck">Console user</AppButton>
+      <AppButton style="margin-left: 10px" @click="onUserChange">Set user data</AppButton>
+      <AppButton style="margin-left: 10px" @click="onShowProfile">Show profile</AppButton>
     </section>
     <section class="existing-posts">
       <h1>Existing Posts</h1>
@@ -11,18 +15,29 @@
 </template>
 
 <script>
-import PostList from "@/components/Posts/PostList";
-import AppButton from "@/components/UI/AppButton";
-
 export default {
+  middleware: ["checkAuth", "auth"],
   layout: "admin",
-  components: {
-    PostList,
-    AppButton
-  },
   computed: {
     loadedPosts() {
       return this.$store.getters.loadedPosts;
+    }
+  },
+  methods: {
+    onLogout() {
+      this.$store.dispatch("logout");
+      this.$router.push("/admin/auth");
+    },
+    onUserCheck() {
+      this.$store.dispatch("getUserData");
+    },
+    onUserChange() {
+      this.$store.dispatch("updateUserData", {
+        photoUrl: "https://ichef.bbci.co.uk/images/ic/720x405/p064kl2c.jpg",
+        token: this.$store.state.token,
+        displayName: "Patryk Szylin",
+        returnSecureToken: true
+      });
     }
   }
 };
