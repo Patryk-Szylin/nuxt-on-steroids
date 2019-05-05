@@ -11,6 +11,7 @@
           style="margin-left: 10px"
           @click="isLogin = !isLogin"
         >Switch to {{ isLogin ? 'Signup' : 'Login' }}</AppButton>
+        <button @click.prevent="facebookLogin">Facebook</button>
       </form>
     </div>
   </div>
@@ -38,6 +39,11 @@ export default {
         .then(() => {
           this.$router.push("/admin");
         });
+    },
+    facebookLogin() {
+      this.$store.dispatch("facebookLogin").then(() => {
+        this.$router.push("/admin");
+      });
     }
   }
 };

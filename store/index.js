@@ -1,11 +1,13 @@
 import Vuex from "vuex";
 import Cookie from "js-cookie";
+import firebase from "~/plugins/fireinit";
 
 const createStore = () => {
   return new Vuex.Store({
     state: {
       loadedPosts: [],
-      token: null
+      token: null,
+      fbUser: {}
     },
     mutations: {
       setPosts(state, posts) {
@@ -25,11 +27,14 @@ const createStore = () => {
       },
       clearToken(state) {
         state.token = null;
+        state.fbUser = null;
+      },
+      setFacebookUser(state, payload) {
+        state.fbUser = payload;
       }
     },
     actions: {
       nuxtServerInit(vuexContext, context) {
-        console.log(context.ssrContext);
         return context.app.$axios
           .$get("/posts.json")
           .then(data => {
@@ -46,6 +51,7 @@ const createStore = () => {
           ...post,
           updatedDate: new Date()
         };
+        console.log(vuexContext.state.token);
         return this.$axios
           .$post(
             "https://nuxt-project-e2a61.firebaseio.com/posts.json?auth=" +
@@ -106,43 +112,57 @@ const createStore = () => {
       initAuth(vuexContext, req) {
         let token;
         let expirationDate;
+        let user = {
+          firstName: ""
+        };
 
         if (req) {
           if (!req.headers.cookie) {
             return;
           }
 
+          // console.log(req.headers.cookie);
           const jwtCookie = req.headers.cookie
             .split(";")
             .find(c => c.trim().startsWith("jwt="));
+          const firstName = req.headers.cookie
+            .split(";")
+            .find(c => c.trim().startsWith("firstName="));
 
           if (!jwtCookie) {
             return;
           }
 
           token = jwtCookie.split("=")[1];
-          expirationDate = req.headers.cookie
-            .split(";")
-            .find(c => c.trim().startsWith("expDate="))
-            .split("=")[1];
+          user.firstName = firstName.split("=")[1];
+          // expirationDate = req.headers.cookie
+          //   .split(";")
+          //   .find(c => c.trim().startsWith("expDate="))
+          //   .split("=")[1];
         } else {
           token = localStorage.getItem("token");
+          user.firstName = localStorage.getItem("firstName");
           expirationDate = localStorage.getItem("tokenExpiration");
         }
 
-        if (new Date().getTime() > +expirationDate || !token) {
-          vuexContext.dispatch("logout");
-          return;
-        }
+        // if (new Date().getTime() > +expirationDate || !token) {
+        //   vuexContext.dispatch("logout");
+        //   return;
+        // }
+
+        // console.log(token);
         vuexContext.commit("setToken", token);
+        vuexContext.commit("setFacebookUser", user);
       },
       logout({ commit }) {
         commit("clearToken");
         Cookie.remove("jwt");
         Cookie.remove("expDate");
+        Cookie.remove("firstName");
 
         if (process.client) {
           localStorage.removeItem("token");
+          localStorage.removeItem("firstName");
           localStorage.removeItem("tokenExpiration");
         }
       },
@@ -174,6 +194,31 @@ const createStore = () => {
           .catch(e => {
             console.log(e);
           });
+      },
+      facebookLogin(vuexContext, user) {
+        return new Promise((resolve, reject) => {
+          var provider = new firebase.auth.FacebookAuthProvider();
+          firebase
+            .auth()
+            .signInWithPopup(provider)
+            .then(res => {
+              var token = firebase.auth().currentUser._lat;
+              var user = {
+                firstName: res.additionalUserInfo.profile.first_name
+              };
+
+              vuexContext.commit("setFacebookUser", user);
+              vuexContext.commit("setToken", token);
+              localStorage.setItem("token", token);
+              localStorage.setItem("firstName", user.firstName);
+              Cookie.set("jwt", token);
+              Cookie.set("firstName", user.firstName);
+              resolve();
+            })
+            .catch(e => {
+              console.log(e);
+            });
+        });
       }
     },
     getters: {

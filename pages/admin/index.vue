@@ -4,8 +4,7 @@
       <AppButton @click="$router.push('/admin/new-post')">Create Post</AppButton>
       <AppButton style="margin-left: 10px" @click="onLogout">Logout</AppButton>
       <AppButton style="margin-left: 10px" @click="onUserCheck">Console user</AppButton>
-      <AppButton style="margin-left: 10px" @click="onUserChange">Set user data</AppButton>
-      <AppButton style="margin-left: 10px" @click="onShowProfile">Show profile</AppButton>
+      <!-- <AppButton style="margin-left: 10px" @click="onShowProfile">Show profile</AppButton> -->
     </section>
     <section class="existing-posts">
       <h1>Existing Posts</h1>
@@ -30,14 +29,6 @@ export default {
     },
     onUserCheck() {
       this.$store.dispatch("getUserData");
-    },
-    onUserChange() {
-      this.$store.dispatch("updateUserData", {
-        photoUrl: "https://ichef.bbci.co.uk/images/ic/720x405/p064kl2c.jpg",
-        token: this.$store.state.token,
-        displayName: "Patryk Szylin",
-        returnSecureToken: true
-      });
     }
   }
 };
